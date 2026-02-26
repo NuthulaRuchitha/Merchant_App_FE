@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useStore } from "../../../shared/components/useStore";
 import { useState } from "react";
 import { Building2, Check } from "lucide-react";
+import Modal from "../../../shared/components/Modal"
+
 
 const CUSTODIAL_BANKS = [
   { id: "stablebank", name: "StableBank",   logo: "SB" },
@@ -22,6 +24,7 @@ const PaymentPage = () => {
   const [walletType,    setWalletType]    = useState("");
   const [selectedBank,  setSelectedBank]  = useState(null);
   const [selectedToken, setSelectedToken] = useState("");
+  const [showStablecoinModal, setShowStablecoinModal] = useState(false);
 
   const totalINR  = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const totalUSDT = (totalINR / 83).toFixed(2);
@@ -109,7 +112,10 @@ const PaymentPage = () => {
 
               {/* clickable header */}
               <div
-                onClick={() => { setSelectedMethod("stablecoin"); resetStablecoin(); }}
+                onClick={() => {
+                  setSelectedMethod("stablecoin");
+                  setShowStablecoinModal(true);
+                }}
                 className={`p-4 cursor-pointer ${selectedMethod === "stablecoin" ? "bg-yellow-50" : "hover:bg-gray-50"}`}
               >
                 <div className="flex items-center justify-between">
@@ -124,123 +130,7 @@ const PaymentPage = () => {
                   )}
                 </div>
               </div>
-
-              {/* expanded sub-steps */}
-              {selectedMethod === "stablecoin" && (
-                <div className="px-4 pb-5 bg-yellow-50 border-t border-yellow-100 space-y-5">
-
-                  {/* STEP 1: wallet type */}
-                  <div>
-                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2.5 mt-4">
-                      Step 1 — Choose wallet type
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
-
-                      {/* MetaMask */}
-                      <button
-                        onClick={() => { setWalletType("metamask"); setSelectedBank(null); setSelectedToken(""); }}
-                        className={`flex items-center gap-2.5 p-3 rounded-xl border-2 transition-all text-left ${
-                          walletType === "metamask"
-                            ? "border-orange-400 bg-orange-50"
-                            : "border-gray-200 bg-white hover:border-orange-300"
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-orange-50 border border-orange-200 flex items-center justify-center flex-shrink-0 text-base">
-                          🦊
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-800">MetaMask</p>
-                          <p className="text-[11px] text-gray-400">Non-custodial</p>
-                        </div>
-                        {walletType === "metamask" && <Check size={13} className="ml-auto text-orange-500 flex-shrink-0" />}
-                      </button>
-
-                      {/* Custodial */}
-                      <button
-                        onClick={() => { setWalletType("custodial"); setSelectedToken(""); }}
-                        className={`flex items-center gap-2.5 p-3 rounded-xl border-2 transition-all text-left ${
-                          walletType === "custodial"
-                            ? "border-yellow-500 bg-white"
-                            : "border-gray-200 bg-white hover:border-yellow-400"
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-yellow-50 border border-yellow-200 flex items-center justify-center flex-shrink-0">
-                          <Building2 size={15} className="text-yellow-700" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-800">Bank Wallet</p>
-                          <p className="text-[11px] text-gray-400">Custodial</p>
-                        </div>
-                        {walletType === "custodial" && <Check size={13} className="ml-auto text-yellow-600 flex-shrink-0" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* STEP 2: bank (custodial only) */}
-                  {walletType === "custodial" && (
-                    <div>
-                      <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2.5">
-                        Step 2 — Select your bank
-                      </p>
-                      <div className="space-y-2">
-                        {CUSTODIAL_BANKS.map((bank) => (
-                          <button
-                            key={bank.id}
-                            onClick={() => setSelectedBank(bank)}
-                            className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
-                              selectedBank?.id === bank.id
-                                ? "border-yellow-500 bg-white shadow-sm"
-                                : "border-gray-200 bg-white hover:border-yellow-300"
-                            }`}
-                          >
-                            <div className="w-9 h-9 rounded-lg bg-[#131921] flex items-center justify-center flex-shrink-0">
-                              <span className="text-yellow-400 text-xs font-black">{bank.logo}</span>
-                            </div>
-                            <span className="font-semibold text-gray-800 text-sm">{bank.name}</span>
-                            {selectedBank?.id === bank.id && (
-                              <Check size={14} className="ml-auto text-yellow-600 flex-shrink-0" />
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* STEP 3 (or 2 for MetaMask): token */}
-                  {(walletType === "metamask" || (walletType === "custodial" && selectedBank)) && (
-                    <div>
-                      <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2.5">
-                        {walletType === "custodial" ? "Step 3" : "Step 2"} — Select token
-                      </p>
-                      <div className="flex gap-3">
-                        {TOKENS.map((token) => (
-                          <button
-                            key={token}
-                            onClick={() => setSelectedToken(token)}
-                            className={`flex-1 py-2.5 rounded-xl border-2 font-bold text-sm transition-all ${
-                              selectedToken === token
-                                ? "border-yellow-500 bg-yellow-400 text-[#131921]"
-                                : "border-gray-200 bg-white text-gray-700 hover:border-yellow-400"
-                            }`}
-                          >
-                            {token}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* amount preview */}
-                  {selectedToken && (
-                    <div className="flex items-center justify-between bg-white rounded-xl px-4 py-3 border border-yellow-200">
-                      <span className="text-sm text-gray-500">You will pay</span>
-                      <span className="text-xl font-black text-[#131921]">
-                        {totalUSDT} <span className="text-yellow-600 text-base">{selectedToken}</span>
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
+              
             </div>
           </div>
 
@@ -318,6 +208,147 @@ const PaymentPage = () => {
           )}
         </div>
       </div>
+      <Modal
+        open={showStablecoinModal}
+        onClose={() => {
+          setShowStablecoinModal(false);
+          resetStablecoin();
+        }}
+      >
+        <div className="space-y-6">
+
+          <h3 className="text-2xl font-bold text-[#131921]">
+            Stablecoin (USDT / USDC)
+          </h3>
+
+          {/* STEP 1 */}
+          <div>
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              Step 1 — Choose wallet type
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+
+              {/* MetaMask */}
+              <button
+                onClick={() => {
+                  setWalletType("metamask");
+                  setSelectedBank(null);
+                  setSelectedToken("");
+                }}
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition ${
+                  walletType === "metamask"
+                    ? "border-orange-400 bg-orange-50"
+                    : "border-gray-200 hover:border-orange-300"
+                }`}
+              >
+                🦊 MetaMask
+                {walletType === "metamask" && (
+                  <Check size={14} className="ml-auto text-orange-500" />
+                )}
+              </button>
+
+              {/* Custodial */}
+              <button
+                onClick={() => {
+                  setWalletType("custodial");
+                  setSelectedToken("");
+                }}
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition ${
+                  walletType === "custodial"
+                    ? "border-yellow-500 bg-yellow-50"
+                    : "border-gray-200 hover:border-yellow-400"
+                }`}
+              >
+                <Building2 size={16} />
+                Bank Wallet
+                {walletType === "custodial" && (
+                  <Check size={14} className="ml-auto text-yellow-600" />
+                )}
+              </button>
+
+            </div>
+          </div>
+
+          {/* STEP 2 – Bank */}
+          {walletType === "custodial" && (
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                Step 2 — Select your bank
+              </p>
+
+              <div className="space-y-2">
+                {CUSTODIAL_BANKS.map((bank) => (
+                  <button
+                    key={bank.id}
+                    onClick={() => setSelectedBank(bank)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition ${
+                      selectedBank?.id === bank.id
+                        ? "border-yellow-500 bg-white shadow-sm"
+                        : "border-gray-200 hover:border-yellow-300"
+                    }`}
+                  >
+                    <span className="font-semibold">{bank.name}</span>
+                    {selectedBank?.id === bank.id && (
+                      <Check size={14} className="ml-auto text-yellow-600" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3 – Token */}
+          {(walletType === "metamask" ||
+            (walletType === "custodial" && selectedBank)) && (
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                Step 3 — Select Token
+              </p>
+
+              <div className="flex gap-3">
+                {TOKENS.map((token) => (
+                  <button
+                    key={token}
+                    onClick={() => setSelectedToken(token)}
+                    className={`flex-1 py-2.5 rounded-xl border-2 font-bold ${
+                      selectedToken === token
+                        ? "border-yellow-500 bg-yellow-400"
+                        : "border-gray-200 hover:border-yellow-400"
+                    }`}
+                  >
+                    {token}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Amount */}
+          {selectedToken && (
+            <div className="flex justify-between bg-gray-100 p-4 rounded-xl">
+              <span>You will pay</span>
+              <span className="font-bold text-lg">
+                {totalUSDT} {selectedToken}
+              </span>
+            </div>
+          )}
+
+          {/* Continue */}
+          <button
+            disabled={!stablecoinReady}
+            onClick={() => {
+              setShowStablecoinModal(false);
+              handleStablecoin();
+            }}
+            className="w-full bg-yellow-400 hover:bg-yellow-500 py-3 rounded-lg font-semibold disabled:opacity-40"
+          >
+            Continue →
+          </button>
+
+        </div>
+      </Modal>
+
     </div>
   );
 };

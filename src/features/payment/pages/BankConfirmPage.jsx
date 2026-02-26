@@ -64,15 +64,31 @@ export default function PaymentConfirmPage() {
         },
       });
     } catch (err) {
-      const msg =
-        err.response?.data?.message ||
-        err.response?.data?.error   ||
-        err.message                 ||
-        "Transfer failed. Please try again.";
-      setError(msg);
-      setLoading(false);
-      setProcessingMsg("");
-    }
+        let backendMessage = "Transfer failed. Please try again.";
+
+        if (err.response?.data) {
+          // If FastAPI-style error
+          if (typeof err.response.data.detail === "string") {
+            backendMessage = err.response.data.detail;
+          }
+
+          // If validation errors (422)
+          else if (Array.isArray(err.response.data.detail)) {
+            backendMessage = err.response.data.detail
+              .map(e => e.msg)
+              .join(", ");
+          }
+
+          // Other possible formats
+          else if (err.response.data.message) {
+            backendMessage = err.response.data.message;
+          }
+        }
+
+        setError(backendMessage);
+        setLoading(false);
+        setProcessingMsg("");
+      }
   };
 
   return (

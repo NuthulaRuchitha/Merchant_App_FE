@@ -1,16 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StoreContext } from "./StoreContext";
 
 const StoreProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+
+  // ✅ Load cart from localStorage on first render
+  const [cart, setCart] = useState(() => {
+    const storedCart = localStorage.getItem("cart");
+    return storedCart ? JSON.parse(storedCart) : [];
+  });
+
   const [orderConfirmed, setOrderConfirmed] = useState(false);
+
+  // ✅ Save cart whenever it changes
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
 
   const addToCart = (product) => {
     setCart((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
+      const existingItem = prev.find(item => item.id === product.id);
 
-      if (existing) {
-        return prev.map((item) =>
+      if (existingItem) {
+        return prev.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
@@ -24,16 +35,20 @@ const StoreProvider = ({ children }) => {
   const decreaseQuantity = (id) => {
     setCart((prev) =>
       prev
-        .map((item) =>
+        .map(item =>
           item.id === id
             ? { ...item, quantity: item.quantity - 1 }
             : item
         )
-        .filter((item) => item.quantity > 0)
+        .filter(item => item.quantity > 0)
     );
   };
 
-  const clearCart = () => setCart([]);
+  // ✅ Clear cart AFTER successful payment
+  const clearCart = () => {
+    setCart([]);
+    localStorage.removeItem("cart");
+  };
 
   return (
     <StoreContext.Provider
