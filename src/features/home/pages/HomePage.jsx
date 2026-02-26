@@ -14,13 +14,13 @@ const HomePage = () => {
 
   const products = [
     { id: 1, name: "Running Shoes", price: 2999, image: download },
-    { id: 2, name: "Smart Watch", price: 4999, image: phone },
+    { id: 2, name: "Smart Watch", price: 4999, image: shopping },
     { id: 3, name: "Wireless Headphones", price: 3499, image: headphones },
     { id: 4, name: "Bluetooth Speaker", price: 2599, image: speaker },
     { id: 5, name: "Gaming Mouse", price: 1999, image: mouse },
     { id: 6, name: "Laptop Backpack", price: 1799, image: backpack },
     { id: 7, name: "Sports T-Shirt", price: 999, image: tshirt },
-    { id: 8, name: "Smartphone", price: 15999, image: shopping },
+    { id: 8, name: "Smartphone", price: 15999, image: phone },
   ];
 
   return (
